@@ -188,7 +188,7 @@ export async function POST(request: NextRequest) {
       headers: request.headers
     });
     
-    return GET(newRequest as any);
+    return GET(newRequest as NextRequest);
     
   } catch (error) {
     console.error('Sub API POST 处理失败:', error);
