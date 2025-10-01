@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     // 获取查询参数
     const target = searchParams.get('target');
     const encodedUrl = searchParams.get('url');
-    const insert = searchParams.get('insert');
+    // const insert = searchParams.get('insert'); // 暂未实现
     const encodedConfig = searchParams.get('config');
     
     // 验证必需参数
@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
     let decodedUrl: string;
     try {
       decodedUrl = decodeURIComponent(encodedUrl);
-    } catch (error) {
+    } catch {
       return NextResponse.json(
         { error: 'url 参数解码失败' },
         { status: 400 }
@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
     }
     
     // 解码配置参数（可选）
-    let configOptions: any = {};
+    let configOptions: Record<string, unknown> = {};
     if (encodedConfig) {
       try {
         const decodedConfig = decodeURIComponent(encodedConfig);
@@ -101,8 +101,8 @@ export async function GET(request: NextRequest) {
     
     // 根据配置选项生成配置
     let config;
-    const ruleMode = configOptions.ruleMode || 'whitelist';
-    const configType = configOptions.configType || 'simple';
+    const ruleMode = (configOptions.ruleMode as 'whitelist' | 'blacklist') || 'whitelist';
+    const configType = (configOptions.configType as 'simple' | 'full') || 'simple';
     
     if (configType === 'full') {
       config = MihomoConfigGenerator.generateConfig(proxies, ruleMode);
