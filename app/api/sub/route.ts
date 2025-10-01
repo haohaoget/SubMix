@@ -40,9 +40,9 @@ export async function GET(request: NextRequest) {
     }
     
     // 验证 target 参数
-    if (target !== 'mihomo') {
+    if (target !== 'mihomo' && target !== 'clash') {
       return NextResponse.json(
-        { error: `不支持的 target 类型: ${target}，目前仅支持 mihomo` },
+        { error: `不支持的 target 类型: ${target}，目前仅支持 mihomo 和 clash` },
         { status: 400 }
       );
     }
@@ -164,9 +164,9 @@ export async function POST(request: NextRequest) {
     }
     
     // 验证 target 参数
-    if (target !== 'mihomo') {
+    if (target !== 'mihomo' && target !== 'clash') {
       return NextResponse.json(
-        { error: `不支持的 target 类型: ${target}，目前仅支持 mihomo` },
+        { error: `不支持的 target 类型: ${target}，目前仅支持 mihomo 和 clash` },
         { status: 400 }
       );
     }
