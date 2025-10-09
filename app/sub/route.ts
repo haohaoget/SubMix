@@ -4,10 +4,10 @@ import { MihomoConfigGenerator } from '@/lib/mihomo-config';
 
 /**
  * Sub API 端点
- * 支持格式: /api/sub?target=mihomo&url=${encodeURIComponent(request.url)}&insert=false&config=${encodeURIComponent(subconfig)}
+ * 支持格式: /sub?target=mihomo&url=${encodeURIComponent(request.url)}&insert=false&config=${encodeURIComponent(subconfig)}
  * 
  * 参数说明:
- * - target: 固定为 mihomo
+ * - target: mihomo
  * - url: 经过URL编码的节点链接（多个节点以"|"分割），支持 VLESS、Hysteria、Hysteria2、Shadowsocks、Trojan 等协议
  * - insert: 是否插入额外配置（暂未实现）
  * - config: 经过URL编码的配置参数（可选）
