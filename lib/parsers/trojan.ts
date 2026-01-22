@@ -200,7 +200,11 @@ export class TrojanParser extends BaseProtocolParser {
 
       // 先 decode提取 "+" 前的部分
       const echValue = decodeURIComponent(params.ech.trim());
-      const domain = echValue.split('+')[0]?.trim();
+      let domain = echValue.split('+')[0]?.trim();
+      // 如果 domain 里还有空格再按空格取第一个有效字段
+      if (domain.includes(' ')) {
+        domain = domain.split(/\s+/)[0].trim();
+      }
 
       // 判断域名是否有效（非空且包含至少一个点）
       const hasValidDomain = domain && domain.includes('.');
