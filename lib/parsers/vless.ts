@@ -180,9 +180,8 @@ export class VlessParser extends BaseProtocolParser {
       // 处理ECH配置 (ech)
       if (params.ech) {
         config['ech-opts'] = {};
-
-        // 提取 "+" 前的部分
-        const echValue = params.ech.trim();
+        // 先 decode提取 "+" 前的部分
+        const echValue = decodeURIComponent(params.ech.trim());
         const domain = echValue.split('+')[0]?.trim();
 
         // 判断域名是否有效（非空且包含至少一个点）
