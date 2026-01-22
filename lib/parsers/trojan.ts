@@ -131,11 +131,11 @@ export class TrojanParser extends BaseProtocolParser {
    */
   private parseWebSocketConfig(config: ProxyNode & TrojanConfig, params: Record<string, string>): void {
     config['ws-opts'] = {};
-    
+
     if (params.path) {
       config['ws-opts'].path = params.path;
     }
-    
+
     if (params.host) {
       config['ws-opts'].headers = { host: params.host };
     }
@@ -146,7 +146,7 @@ export class TrojanParser extends BaseProtocolParser {
    */
   private parseGRPCConfig(config: ProxyNode & TrojanConfig, params: Record<string, string>): void {
     config['grpc-opts'] = {};
-    
+
     if (params.serviceName || params['grpc-service-name']) {
       config['grpc-opts']['grpc-service-name'] = params.serviceName || params['grpc-service-name'];
     }
@@ -193,6 +193,25 @@ export class TrojanParser extends BaseProtocolParser {
         console.warn(`不支持的客户端指纹: ${clientFp}`);
       }
     }
+
+    // 处理ECH配置 (ech)
+    if (params.ech) {
+      config['ech-opts'] = {};
+
+      // 提取 "+" 前的部分
+      const echValue = params.ech.trim();
+      const domain = echValue.split('+')[0]?.trim();
+
+      // 判断域名是否有效（非空且包含至少一个点）
+      const hasValidDomain = domain && domain.includes('.');
+
+      if (hasValidDomain) {
+        config['ech-opts'].enable = true;
+        config['ech-opts']['query-server-name'] = domain;
+      } else {
+        config['ech-opts'].enable = false;
+      }
+    }
   }
 
   /**
@@ -202,17 +221,17 @@ export class TrojanParser extends BaseProtocolParser {
     // 检查是否有 REALITY 相关配置
     if (params.pbk || params['public-key'] || params.sid || params['short-id']) {
       config['reality-opts'] = {};
-      
+
       // REALITY 公钥
       if (params.pbk || params['public-key']) {
         config['reality-opts']['public-key'] = params.pbk || params['public-key'];
       }
-      
+
       // REALITY 短 ID
       if (params.sid || params['short-id']) {
         config['reality-opts']['short-id'] = params.sid || params['short-id'];
       }
-      
+
       if (!config['reality-opts']['public-key']) {
         console.warn('REALITY 配置缺少 public-key 参数');
       }
@@ -228,7 +247,7 @@ export class TrojanParser extends BaseProtocolParser {
       config['ss-opts'] = {
         enabled: this.parseBooleanParam(params['ss-enabled'] || params.ssEnabled, false)
       };
-      
+
       // SS 加密方法
       if (params['ss-method'] || params.ssMethod) {
         const method = params['ss-method'] || params.ssMethod;
@@ -241,7 +260,7 @@ export class TrojanParser extends BaseProtocolParser {
       } else {
         config['ss-opts'].method = 'aes-128-gcm'; // 默认方法
       }
-      
+
       // SS 密码
       if (params['ss-password'] || params.ssPassword) {
         config['ss-opts'].password = params['ss-password'] || params.ssPassword;

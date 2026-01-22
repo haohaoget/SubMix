@@ -150,12 +150,12 @@ export class VlessParser extends BaseProtocolParser {
     const security = params.security || params.tls;
     if (security === 'tls' || security === 'reality' || params.tls === 'true') {
       config.tls = true;
-      
+
       // servername (SNI)
       if (params.sni || params.servername) {
         config.servername = params.sni || params.servername;
       }
-      
+
       // ALPN 协议
       if (params.alpn) {
         const alpnList = params.alpn.split(',').map(a => a.trim()).filter(a => a);
@@ -163,7 +163,7 @@ export class VlessParser extends BaseProtocolParser {
           config.alpn = alpnList;
         }
       }
-      
+
       // 客户端指纹 (VLESS协议使用client-fingerprint字段)
       if (params['client-fingerprint'] || params.clientFingerprint || params.fingerprint || params.fp) {
         // 优先使用client-fingerprint，其次是fingerprint（兼容性处理）
@@ -176,26 +176,45 @@ export class VlessParser extends BaseProtocolParser {
           config['client-fingerprint'] = 'chrome';
         }
       }
-      
+
+      // 处理ECH配置 (ech)
+      if (params.ech) {
+        config['ech-opts'] = {};
+
+        // 提取 "+" 前的部分
+        const echValue = params.ech.trim();
+        const domain = echValue.split('+')[0]?.trim();
+
+        // 判断域名是否有效（非空且包含至少一个点）
+        const hasValidDomain = domain && domain.includes('.');
+
+        if (hasValidDomain) {
+          config['ech-opts'].enable = true;
+          config['ech-opts']['query-server-name'] = domain;
+        } else {
+          config['ech-opts'].enable = false;
+        }
+      }
+
       // 跳过证书验证
       if (params['skip-cert-verify'] || params.allowInsecure) {
         config['skip-cert-verify'] = this.parseBooleanParam(
           params['skip-cert-verify'] || params.allowInsecure
         );
       }
-      
+
       // REALITY 配置
       if (security === 'reality' || params.reality) {
         config['reality-opts'] = {};
-        
+
         if (params.pbk || params['public-key']) {
           config['reality-opts']['public-key'] = params.pbk || params['public-key'];
         }
-        
+
         if (params.sid || params['short-id']) {
           config['reality-opts']['short-id'] = params.sid || params['short-id'];
         }
-        
+
         if (!config['reality-opts']['public-key']) {
           console.warn('REALITY 配置缺少 public-key 参数');
         }
@@ -208,7 +227,7 @@ export class VlessParser extends BaseProtocolParser {
    */
   private parseTransportConfig(config: ProxyNode & VlessConfig, params: Record<string, string>): void {
     const network = config.network || 'tcp';
-    
+
     switch (network) {
       case 'ws':
         this.parseWebSocketConfig(config, params);
@@ -234,16 +253,16 @@ export class VlessParser extends BaseProtocolParser {
    */
   private parseWebSocketConfig(config: ProxyNode & VlessConfig, params: Record<string, string>): void {
     config['ws-opts'] = {};
-    
+
     if (params.path) {
       config['ws-opts'].path = params.path;
     }
-    
+
     // WebSocket Headers
     if (params.host) {
       config['ws-opts'].headers = { host: params.host };
     }
-    
+
     // 早期数据长度
     if (params['early-data-header-name'] || params.ed) {
       config['ws-opts']['early-data-header-name'] = params['early-data-header-name'] || params.ed;
@@ -255,12 +274,12 @@ export class VlessParser extends BaseProtocolParser {
    */
   private parseHTTPConfig(config: ProxyNode & VlessConfig, params: Record<string, string>): void {
     config['http-opts'] = {};
-    
+
     if (params.path) {
       const paths = params.path.split(',').map(p => p.trim()).filter(p => p);
       config['http-opts'].path = paths;
     }
-    
+
     if (params.host) {
       const hosts = params.host.split(',').map(h => h.trim()).filter(h => h);
       config['http-opts'].headers = { Host: hosts };
@@ -272,11 +291,11 @@ export class VlessParser extends BaseProtocolParser {
    */
   private parseHTTP2Config(config: ProxyNode & VlessConfig, params: Record<string, string>): void {
     config['h2-opts'] = {};
-    
+
     if (params.path) {
       config['h2-opts'].path = params.path;
     }
-    
+
     if (params.host) {
       const hosts = params.host.split(',').map(h => h.trim()).filter(h => h);
       config['h2-opts'].host = hosts;
@@ -288,11 +307,11 @@ export class VlessParser extends BaseProtocolParser {
    */
   private parseGRPCConfig(config: ProxyNode & VlessConfig, params: Record<string, string>): void {
     config['grpc-opts'] = {};
-    
+
     if (params.serviceName || params['grpc-service-name']) {
       config['grpc-opts']['grpc-service-name'] = params.serviceName || params['grpc-service-name'];
     }
-    
+
     if (params['grpc-mode']) {
       config['grpc-opts']['grpc-mode'] = params['grpc-mode'];
     }
