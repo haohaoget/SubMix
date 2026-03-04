@@ -6,7 +6,7 @@ export interface ProxyNode {
   server: string;
   port: number;
   id?: string;
-   
+
   [key: string]: any;
 }
 
@@ -20,7 +20,7 @@ export interface IProtocolParser {
    * @returns 解析后的代理节点，失败返回 null
    */
   parse(url: string): ProxyNode | null;
-  
+
   /**
    * 检查是否支持该协议
    * @param url 协议链接
@@ -48,15 +48,25 @@ export abstract class BaseProtocolParser implements IProtocolParser {
   }
 
   /**
+   * 处理主机名
+   */
+  protected handleHostname(server: string): string {
+    if (server.startsWith('[') && server.endsWith(']')) {
+      return server.slice(1, -1);
+    }
+    return server;
+  }
+
+  /**
    * 解析布尔值参数的通用方法
    */
   protected parseBooleanParam(value: string | undefined, defaultValue: boolean = false): boolean {
     if (!value) return defaultValue;
-    
+
     const param = value.toLowerCase();
     if (param === 'true' || param === '1') return true;
     if (param === 'false' || param === '0') return false;
-    
+
     return defaultValue;
   }
 
@@ -65,7 +75,7 @@ export abstract class BaseProtocolParser implements IProtocolParser {
    */
   protected parseNumberParam(value: string | undefined, defaultValue: number = 0): number {
     if (!value) return defaultValue;
-    
+
     const num = parseInt(value);
     return isNaN(num) ? defaultValue : num;
   }
@@ -77,15 +87,15 @@ export abstract class BaseProtocolParser implements IProtocolParser {
     try {
       // 清理 Base64 字符串，移除可能的 URL 编码
       let cleanStr = str.trim();
-      
+
       // 处理 URL 安全的 Base64 (替换 - 和 _ 为标准 Base64 字符)
       cleanStr = cleanStr.replace(/-/g, '+').replace(/_/g, '/');
-      
+
       // 确保 Base64 字符串的长度是 4 的倍数
       while (cleanStr.length % 4) {
         cleanStr += '=';
       }
-      
+
       return atob(cleanStr);
     } catch (error) {
       console.warn('Base64 解码失败:', str, error);
@@ -100,7 +110,7 @@ export abstract class BaseProtocolParser implements IProtocolParser {
   protected parseUrlParams(search: string): Record<string, string> {
     const params: Record<string, string> = {};
     if (!search) return params;
-    
+
     const urlParams = new URLSearchParams(search);
     for (const [key, value] of urlParams.entries()) {
       params[key] = value;

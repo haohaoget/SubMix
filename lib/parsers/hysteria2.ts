@@ -35,7 +35,7 @@ export class Hysteria2Parser extends BaseProtocolParser {
 
       const urlObj = new URL(url);
       const password = urlObj.username;
-      const server = urlObj.hostname;
+      const server = this.handleHostname(urlObj.hostname);
       const port = parseInt(urlObj.port) || 443;
       const name = decodeURIComponent(urlObj.hash.slice(1)) || `hysteria2-${server}`;
       const params = this.parseUrlParams(urlObj.search);
@@ -52,7 +52,6 @@ export class Hysteria2Parser extends BaseProtocolParser {
         port,
         password,
         udp: this.parseUdpParam(params.udp),
-        id: this.generateId(),
       };
 
       // 处理端口跳跃 (ports)
@@ -92,7 +91,7 @@ export class Hysteria2Parser extends BaseProtocolParser {
     if (params.obfs) {
       if (Hysteria2Parser.getSupportedObfs().includes(params.obfs)) {
         config.obfs = params.obfs;
-        
+
         // 混淆器密码
         if (params['obfs-password'] || params.obfsPassword) {
           config['obfs-password'] = params['obfs-password'] || params.obfsPassword;
@@ -153,17 +152,17 @@ export class Hysteria2Parser extends BaseProtocolParser {
    */
   private parseBandwidth(bandwidth: string): string {
     if (!bandwidth) return '';
-    
+
     // 如果已经包含单位，直接返回
     if (/\s*(Mbps|mbps|Kbps|kbps|Gbps|gbps|bps)$/i.test(bandwidth)) {
       return bandwidth;
     }
-    
+
     // 如果只是数字，默认添加 Mbps 单位
     if (/^\d+$/.test(bandwidth)) {
       return `${bandwidth} Mbps`;
     }
-    
+
     return bandwidth;
   }
 

@@ -56,7 +56,7 @@ export class TrojanParser extends BaseProtocolParser {
 
       const urlObj = new URL(url);
       const password = urlObj.username;
-      const server = urlObj.hostname;
+      const server = this.handleHostname(urlObj.hostname);
       const port = parseInt(urlObj.port) || 443;
       const name = decodeURIComponent(urlObj.hash.slice(1)) || `trojan-${server}`;
       const params = this.parseUrlParams(urlObj.search);
@@ -73,7 +73,6 @@ export class TrojanParser extends BaseProtocolParser {
         port,
         password,
         udp: this.parseUdpParam(params.udp),
-        id: this.generateId(),
       };
 
       // 处理传输层协议

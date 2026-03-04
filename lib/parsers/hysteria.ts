@@ -51,7 +51,7 @@ export class HysteriaParser extends BaseProtocolParser {
 
       const urlObj = new URL(url);
       const authStr = urlObj.username;
-      const server = urlObj.hostname;
+      const server = this.handleHostname(urlObj.hostname);
       const port = parseInt(urlObj.port) || 443;
       const name = decodeURIComponent(urlObj.hash.slice(1)) || `hysteria-${server}`;
       const params = this.parseUrlParams(urlObj.search);
@@ -68,7 +68,6 @@ export class HysteriaParser extends BaseProtocolParser {
         port,
         'auth-str': authStr,
         udp: this.parseUdpParam(params.udp),
-        id: this.generateId(),
       };
 
       // 处理协议类型 (protocol)
@@ -120,17 +119,17 @@ export class HysteriaParser extends BaseProtocolParser {
    */
   private parseBandwidth(bandwidth: string): string {
     if (!bandwidth) return '';
-    
+
     // 如果已经包含单位，直接返回
     if (/\s*(Mbps|mbps|Kbps|kbps|Gbps|gbps|bps)$/i.test(bandwidth)) {
       return bandwidth;
     }
-    
+
     // 如果只是数字，默认添加 Mbps 单位
     if (/^\d+$/.test(bandwidth)) {
       return `${bandwidth} Mbps`;
     }
-    
+
     return bandwidth;
   }
 
